@@ -12,6 +12,7 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<usize> {
     let lines = binding.split("\n");
     let mut matching_lines: Vec<usize> = Vec::new();
 
+    // TODO we might be able to stream this for better memory management
     for (line_index, line_content) in lines.enumerate() {
         if line_content.contains(pattern) {
             matching_lines.push(line_index)
