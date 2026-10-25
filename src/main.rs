@@ -31,13 +31,12 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<usize> {
 
 #[cfg(test)]
 mod tests {
-    use std::env::temp_dir;
     use super::*;
 
     #[test]
     fn check_file_positive() {
-        let dir = temp_dir();
-        let file_path = dir.as_path().join("test.txt");
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
 
         fs::write(&file_path, "hello test 123").unwrap();
 
@@ -49,8 +48,8 @@ mod tests {
 
     #[test]
     fn check_file_negative() {
-        let dir = temp_dir();
-        let file_path = dir.as_path().join("test.txt");
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
 
         fs::write(&file_path, "hello test 123").unwrap();
 
@@ -61,8 +60,9 @@ mod tests {
 
     #[test]
     fn check_file_many_lines() {
-        let dir = temp_dir();
-        let file_path = dir.as_path().join("test.txt");
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+
         let amount_of_lines = 100000;
         let line_text = "hello test 123\n";
         let file_content = line_text.repeat(amount_of_lines);
