@@ -51,4 +51,19 @@ mod tests {
 
         assert_eq!(result.len(), 0)
     }
+
+    #[test]
+    fn check_file_many_lines() {
+        let dir = temp_dir();
+        let file_path = dir.as_path().join("test.txt");
+        let amount_of_lines = 100000;
+        let line_text = "hello test 123\n";
+        let file_content = line_text.repeat(amount_of_lines);
+
+        fs::write(&file_path, file_content).unwrap();
+
+        let result = check_file(file_path.into_string().unwrap().as_str(), "test");
+
+        assert_eq!(result.len(), amount_of_lines)
+    }
 }
