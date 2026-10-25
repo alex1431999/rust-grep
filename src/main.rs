@@ -6,8 +6,8 @@ fn main() {
     println!("Result {:?}", result)
 }
 
-fn check_file(path: &str, pattern: &str) -> Vec<usize> {
-    let file_content = fs::read_to_string(path);
+fn check_file(file_path: &str, pattern: &str) -> Vec<usize> {
+    let file_content = fs::read_to_string(file_path);
     let binding = file_content.unwrap();
     let lines = binding.split("\n");
     let mut matching_lines: Vec<usize> = Vec::new();
