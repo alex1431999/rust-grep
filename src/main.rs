@@ -1,23 +1,24 @@
 use std::fs;
 
 fn main() {
-    let result = check_file("./test-files/test-one.txt", "test2");
+    let result = check_file("./test-files/test-one.txt", "test");
 
-    println!("Result {}", result)
+    println!("Result {:?}", result)
 }
 
-fn check_file(path: &str, pattern: &str) -> bool {
+fn check_file(path: &str, pattern: &str) -> Vec<usize> {
     let file_content = fs::read_to_string(path);
     let binding = file_content.unwrap();
     let lines = binding.split("\n");
+    let mut matching_lines: Vec<usize> = Vec::new();
 
-    for line in lines {
-        if line.contains(pattern) {
-            return true
+    for (line_index, line_content) in lines.enumerate() {
+        if line_content.contains(pattern) {
+            matching_lines.push(line_index)
         }
     }
 
-    false
+    matching_lines
 }
 
 #[cfg(test)]
@@ -34,7 +35,8 @@ mod tests {
 
         let result = check_file(file_path.into_string().unwrap().as_str(), "test");
 
-        assert!(result)
+        assert_eq!(result.len(), 1);
+        assert_eq!(*result.get(0).unwrap(), 0);
     }
 
     #[test]
@@ -46,6 +48,6 @@ mod tests {
 
         let result = check_file(file_path.into_string().unwrap().as_str(), "not in there");
 
-        assert!(!result)
+        assert_eq!(result.len(), 0)
     }
 }
