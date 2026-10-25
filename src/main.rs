@@ -73,4 +73,10 @@ mod tests {
 
         assert_eq!(result.len(), amount_of_lines)
     }
+
+    #[test]
+    fn check_file_handles_file_it_cant_read() {
+        let result = check_file("does_not_exist.txt", "test");
+        assert_eq!(result.len(), 0)
+    }
 }
