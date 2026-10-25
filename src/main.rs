@@ -7,9 +7,16 @@ fn main() {
 }
 
 fn check_file(file_path: &str, pattern: &str) -> Vec<usize> {
-    let file_content = fs::read_to_string(file_path);
-    let binding = file_content.unwrap();
-    let lines = binding.split("\n");
+    let file_content = match fs::read_to_string(file_path) {
+        Ok(file_content) => file_content,
+        Err(_) => {
+            eprintln!("Was not able to read file {file_path}");
+            return Vec::new()
+        }
+    };
+
+
+    let lines = file_content.split("\n");
     let mut matching_lines: Vec<usize> = Vec::new();
 
     // TODO we might be able to stream this for better memory management
