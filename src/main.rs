@@ -7,7 +7,7 @@ struct Match {
 }
 
 fn main() {
-    let matches = check_file("./test-files/test-one.txt", "test");
+    let matches = check_dir("./test-files", "test");
     print_matches(matches)
 }
 
