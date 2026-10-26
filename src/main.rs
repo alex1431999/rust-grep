@@ -7,8 +7,10 @@ struct Match {
 }
 
 fn main() {
-    let matches = check_dir("./test-files", "test");
-    print_matches(matches)
+    let pattern = "test";
+
+    let matches = check_dir("./test-files", pattern);
+    print_matches(matches, pattern)
 }
 
 fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
@@ -66,13 +68,20 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
     matches
 }
 
-fn print_matches(matches: Vec<Match>) {
+fn print_matches(matches: Vec<Match>, pattern: &str) {
     for match_current in matches {
         println!(
             "{}:{} {}",
-            match_current.file_path, match_current.line_index, match_current.line_content
+            match_current.file_path,
+            match_current.line_index,
+            highlight_pattern_in_content(match_current.line_content.as_str(), pattern)
         )
     }
+}
+
+fn highlight_pattern_in_content(content: &str, pattern: &str) -> String {
+    let parts: Vec<&str> = content.split(pattern).collect();
+    parts.join(format!("\x1b[43m {pattern} \x1b[0m").as_str())
 }
 
 #[cfg(test)]
@@ -139,5 +148,13 @@ mod tests {
     fn check_file_handles_file_it_cant_read() {
         let result = check_file("does_not_exist.txt", "test");
         assert_eq!(result.len(), 0)
+    }
+
+    #[test]
+    fn highlight_pattern_in_content_basic() {
+        assert_eq!(
+            highlight_pattern_in_content("test hello there", "hello"),
+            "test \x1b[43m hello \x1b[0m there"
+        )
     }
 }
