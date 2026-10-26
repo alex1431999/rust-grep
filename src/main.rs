@@ -11,17 +11,45 @@ fn main() {
     print_matches(matches)
 }
 
+fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
+    let mut matches: Vec<Match> = Vec::new();
+
+    let dir = match fs::read_dir(dir_path) {
+        Ok(dir) => dir,
+        Err(_) => {
+            eprintln!("Was not able to read dir {dir_path}");
+            return matches;
+        }
+    };
+
+    // TODO we are assuming that the dir_entry is a readable file here, maybe we need to check for type of file as well
+    for dir_entry in dir {
+        let dir_entry_path = dir_entry.unwrap().path();
+
+        if dir_entry_path.is_dir() {
+            let mut matches_in_sub_dir = check_dir(dir_entry_path.to_str().unwrap(), pattern);
+            matches.append(&mut matches_in_sub_dir);
+        } else {
+            let mut matches_in_file = check_file(dir_entry_path.to_str().unwrap(), pattern);
+            matches.append(&mut matches_in_file)
+        }
+    }
+
+    matches
+}
+
 fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
+    let mut matches: Vec<Match> = Vec::new();
+
     let file_content = match fs::read_to_string(file_path) {
         Ok(file_content) => file_content,
         Err(_) => {
             eprintln!("Was not able to read file {file_path}");
-            return Vec::new();
+            return matches;
         }
     };
 
     let lines = file_content.split("\n");
-    let mut matching_lines: Vec<Match> = Vec::new();
 
     // TODO we might be able to stream this for better memory management
     for (line_index, line_content) in lines.enumerate() {
@@ -31,11 +59,11 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
                 line_content: line_content.parse().unwrap(),
                 file_path: file_path.parse().unwrap(),
             };
-            matching_lines.push(match_found);
+            matches.push(match_found);
         }
     }
 
-    matching_lines
+    matches
 }
 
 fn print_matches(matches: Vec<Match>) {
@@ -50,6 +78,21 @@ fn print_matches(matches: Vec<Match>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn check_dir_basic() {
+        let dir = tempfile::tempdir().unwrap();
+        let file_path_first_file = dir.path().join("test_first.txt");
+        let file_path_second_file = dir.path().join("test_second.txt");
+
+        fs::write(&file_path_first_file, "hello test 123").unwrap();
+        fs::write(&file_path_second_file, "hello test 123").unwrap();
+
+        let result = check_dir(dir.path().to_str().unwrap(), "test");
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(result.get(0).unwrap().line_index, 1);
+    }
 
     #[test]
     fn check_file_positive() {
