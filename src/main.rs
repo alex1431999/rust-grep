@@ -13,8 +13,6 @@ fn main() {
         None => panic!("You need to supply a pattern"),
     };
 
-    println!("{pattern}");
-
     let matches = check_dir("./test-files", pattern);
     print_matches(matches, pattern)
 }
