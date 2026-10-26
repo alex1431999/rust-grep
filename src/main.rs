@@ -70,8 +70,8 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
                 if line_content_string.contains(pattern) {
                     let match_found = Match {
                         line_index: line_index + 1,
-                        line_content: line_content_string.parse().unwrap(),
-                        file_path: file_path.parse().unwrap(),
+                        line_content: line_content_string,
+                        file_path: file_path.to_owned(),
                     };
                     matches.push(match_found);
                 }
