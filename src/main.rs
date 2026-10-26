@@ -65,18 +65,15 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
     let reader = BufReader::new(file);
 
     for (line_index, line_content) in reader.lines().enumerate() {
-        match line_content {
-            Ok(line_content_string) => {
-                if line_content_string.contains(pattern) {
-                    let match_found = Match {
-                        line_index: line_index + 1,
-                        line_content: line_content_string,
-                        file_path: file_path.to_owned(),
-                    };
-                    matches.push(match_found);
-                }
-            }
-            _ => {}
+        if let Ok(line_content_string) = line_content
+            && line_content_string.contains(pattern)
+        {
+            let match_found = Match {
+                line_index: line_index + 1,
+                line_content: line_content_string,
+                file_path: file_path.to_owned(),
+            };
+            matches.push(match_found);
         }
     }
 
