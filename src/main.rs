@@ -34,7 +34,6 @@ fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
         }
     };
 
-    // TODO we are assuming that the dir_entry is a readable file here, maybe we need to check for type of file as well
     for dir_entry in dir {
         let dir_entry_path = dir_entry.unwrap().path();
 
