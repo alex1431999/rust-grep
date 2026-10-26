@@ -1,12 +1,17 @@
 use std::fs;
 
-fn main() {
-    let result = check_file("./test-files/test-one.txt", "test");
-
-    println!("Result {:?}", result)
+struct Match {
+    file_path: String,
+    line_index: usize,
+    line_content: String,
 }
 
-fn check_file(file_path: &str, pattern: &str) -> Vec<usize> {
+fn main() {
+    let matches = check_file("./test-files/test-one.txt", "test");
+    print_matches(matches)
+}
+
+fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
     let file_content = match fs::read_to_string(file_path) {
         Ok(file_content) => file_content,
         Err(_) => {
@@ -17,16 +22,23 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<usize> {
 
 
     let lines = file_content.split("\n");
-    let mut matching_lines: Vec<usize> = Vec::new();
+    let mut matching_lines: Vec<Match> = Vec::new();
 
     // TODO we might be able to stream this for better memory management
     for (line_index, line_content) in lines.enumerate() {
         if line_content.contains(pattern) {
-            matching_lines.push(line_index)
+            let match_found = Match { line_index: line_index + 1, line_content: line_content.parse().unwrap(), file_path: file_path.parse().unwrap() };
+            matching_lines.push(match_found);
         }
     }
 
     matching_lines
+}
+
+fn print_matches(matches: Vec<Match>) {
+    for match_current in matches {
+        println!("{}:{} {}", match_current.file_path, match_current.line_index, match_current.line_content)
+    }
 }
 
 #[cfg(test)]
@@ -43,7 +55,7 @@ mod tests {
         let result = check_file(file_path.into_string().unwrap().as_str(), "test");
 
         assert_eq!(result.len(), 1);
-        assert_eq!(*result.get(0).unwrap(), 0);
+        assert_eq!(result.get(0).unwrap().line_index, 1);
     }
 
     #[test]
