@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::{env, fs};
 
 struct Match {
@@ -52,25 +54,29 @@ fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
 fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
     let mut matches: Vec<Match> = Vec::new();
 
-    let file_content = match fs::read_to_string(file_path) {
-        Ok(file_content) => file_content,
+    let file = match File::open(file_path) {
+        Ok(file) => file,
         Err(_) => {
             eprintln!("Was not able to read file {file_path}");
             return matches;
         }
     };
 
-    let lines = file_content.split("\n");
+    let reader = BufReader::new(file);
 
-    // TODO we might be able to stream this for better memory management
-    for (line_index, line_content) in lines.enumerate() {
-        if line_content.contains(pattern) {
-            let match_found = Match {
-                line_index: line_index + 1,
-                line_content: line_content.parse().unwrap(),
-                file_path: file_path.parse().unwrap(),
-            };
-            matches.push(match_found);
+    for (line_index, line_content) in reader.lines().enumerate() {
+        match line_content {
+            Ok(line_content_string) => {
+                if line_content_string.contains(pattern) {
+                    let match_found = Match {
+                        line_index: line_index + 1,
+                        line_content: line_content_string.parse().unwrap(),
+                        file_path: file_path.parse().unwrap(),
+                    };
+                    matches.push(match_found);
+                }
+            }
+            _ => {}
         }
     }
 
