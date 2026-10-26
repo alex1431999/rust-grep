@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fs};
 
 struct Match {
     file_path: String,
@@ -7,7 +7,13 @@ struct Match {
 }
 
 fn main() {
-    let pattern = "test";
+    let args: Vec<String> = env::args().collect();
+    let pattern = match args.get(1) {
+        Some(pattern) => pattern,
+        None => panic!("You need to supply a pattern"),
+    };
+
+    println!("{pattern}");
 
     let matches = check_dir("./test-files", pattern);
     print_matches(matches, pattern)
