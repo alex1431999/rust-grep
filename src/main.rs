@@ -16,10 +16,9 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
         Ok(file_content) => file_content,
         Err(_) => {
             eprintln!("Was not able to read file {file_path}");
-            return Vec::new()
+            return Vec::new();
         }
     };
-
 
     let lines = file_content.split("\n");
     let mut matching_lines: Vec<Match> = Vec::new();
@@ -27,7 +26,11 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
     // TODO we might be able to stream this for better memory management
     for (line_index, line_content) in lines.enumerate() {
         if line_content.contains(pattern) {
-            let match_found = Match { line_index: line_index + 1, line_content: line_content.parse().unwrap(), file_path: file_path.parse().unwrap() };
+            let match_found = Match {
+                line_index: line_index + 1,
+                line_content: line_content.parse().unwrap(),
+                file_path: file_path.parse().unwrap(),
+            };
             matching_lines.push(match_found);
         }
     }
@@ -37,7 +40,10 @@ fn check_file(file_path: &str, pattern: &str) -> Vec<Match> {
 
 fn print_matches(matches: Vec<Match>) {
     for match_current in matches {
-        println!("{}:{} {}", match_current.file_path, match_current.line_index, match_current.line_content)
+        println!(
+            "{}:{} {}",
+            match_current.file_path, match_current.line_index, match_current.line_content
+        )
     }
 }
 
