@@ -8,12 +8,18 @@ struct Match {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+
     let pattern = match args.get(1) {
         Some(pattern) => pattern,
         None => panic!("You need to supply a pattern"),
     };
 
-    let matches = check_dir("./test-files", pattern);
+    let dir_path = match args.get(2) {
+        Some(dir_path) => dir_path,
+        None => "./test-files",
+    };
+
+    let matches = check_dir(dir_path, pattern);
     print_matches(matches, pattern)
 }
 
