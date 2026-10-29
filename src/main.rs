@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::{env, fs};
+use std::thread::JoinHandle;
+use std::{env, fs, thread};
 
 struct Match {
     file_path: String,
@@ -36,7 +37,7 @@ fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
         }
     };
 
-    // TODO: we can use threading here to improve performance
+    let mut threads: Vec<JoinHandle<Vec<Match>>> = Vec::new();
     for dir_entry in dir {
         let dir_entry_path = dir_entry.unwrap().path();
 
@@ -44,9 +45,19 @@ fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
             let mut matches_in_sub_dir = check_dir(dir_entry_path.to_str().unwrap(), pattern);
             matches.append(&mut matches_in_sub_dir);
         } else {
-            let mut matches_in_file = check_file(dir_entry_path.to_str().unwrap(), pattern);
-            matches.append(&mut matches_in_file)
+            let pattern_copy = pattern.to_owned();
+            let dir_entry_path_copy = dir_entry_path.to_str().unwrap().to_owned();
+            let handle = thread::spawn(move || {
+                return check_file(&dir_entry_path_copy, &pattern_copy);
+            });
+
+            threads.push(handle);
         }
+    }
+
+    for thread in threads {
+        let mut matches_to_add = thread.join().unwrap();
+        matches.append(&mut matches_to_add);
     }
 
     matches
