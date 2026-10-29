@@ -22,11 +22,11 @@ fn main() {
         None => "./test-files",
     };
 
-    let matches = check_dir(dir_path, pattern);
+    let matches = check_dir(dir_path, pattern, true);
     print_matches(matches, pattern)
 }
 
-fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
+fn check_dir(dir_path: &str, pattern: &str, use_threading: bool) -> Vec<Match> {
     let mut matches: Vec<Match> = Vec::new();
 
     let dir = match fs::read_dir(dir_path) {
@@ -42,24 +42,32 @@ fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
         let dir_entry_path = dir_entry.unwrap().path();
 
         if dir_entry_path.is_dir() {
-            let mut matches_in_sub_dir = check_dir(dir_entry_path.to_str().unwrap(), pattern);
+            let mut matches_in_sub_dir =
+                check_dir(dir_entry_path.to_str().unwrap(), pattern, use_threading);
             matches.append(&mut matches_in_sub_dir);
         } else {
             let pattern_copy = pattern.to_owned();
             let dir_entry_path_copy = dir_entry_path.to_str().unwrap().to_owned();
-            let handle = thread::spawn(move || {
-                return check_file(&dir_entry_path_copy, &pattern_copy);
-            });
 
-            threads.push(handle);
+            if use_threading {
+                let handle = thread::spawn(move || {
+                    return check_file(&dir_entry_path_copy, &pattern_copy);
+                });
+
+                threads.push(handle);
+            } else {
+                let mut matches_to_add = check_file(&dir_entry_path_copy, &pattern_copy);
+                matches.append(&mut matches_to_add);
+            }
         }
     }
 
-    for thread in threads {
-        let mut matches_to_add = thread.join().unwrap();
-        matches.append(&mut matches_to_add);
+    if use_threading {
+        for thread in threads {
+            let mut matches_to_add = thread.join().unwrap();
+            matches.append(&mut matches_to_add);
+        }
     }
-
     matches
 }
 
@@ -130,7 +138,7 @@ mod tests {
         fs::write(&file_path_first_file, "hello test 123").unwrap();
         fs::write(&file_path_second_file, "hello test 123").unwrap();
 
-        let result = check_dir(dir.path().to_str().unwrap(), "test");
+        let result = check_dir(dir.path().to_str().unwrap(), "test", true);
 
         assert_eq!(result.len(), 2);
         assert_eq!(result.get(0).unwrap().line_index, 1);
@@ -204,7 +212,7 @@ mod tests {
             }
         }
 
-        check_dir(base_dir.path().to_str().unwrap(), "test");
+        check_dir(base_dir.path().to_str().unwrap(), "test", true);
 
         let elapsed = start.elapsed();
 
