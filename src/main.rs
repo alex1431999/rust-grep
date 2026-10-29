@@ -197,7 +197,6 @@ mod tests {
 
     #[test]
     fn performance() {
-        let start = Instant::now();
         let dir_amount = 10;
         let files_per_dir_amount = 100;
 
@@ -212,10 +211,15 @@ mod tests {
             }
         }
 
+        let start_unthreaded = Instant::now();
+        check_dir(base_dir.path().to_str().unwrap(), "test", false);
+        let elapsed_unthreaded = start_unthreaded.elapsed();
+
+        let start_threaded = Instant::now();
         check_dir(base_dir.path().to_str().unwrap(), "test", true);
+        let elapsed_threaded = start_threaded.elapsed();
 
-        let elapsed = start.elapsed();
-
-        println!("Elapsed: {:?}", elapsed)
+        println!("Elapsed unthreaded: {:?}", elapsed_unthreaded);
+        println!("Elapsed threaded: {:?}", elapsed_threaded);
     }
 }
