@@ -99,6 +99,15 @@ fn highlight_pattern_in_content(content: &str, pattern: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
+    use std::time::Instant;
+
+    fn create_large_file(file_path: &PathBuf, amount_of_lines: usize) {
+        let line_text = "hello test 123\n";
+        let file_content = line_text.repeat(amount_of_lines);
+
+        fs::write(&file_path, file_content).unwrap();
+    }
 
     #[test]
     fn check_dir_basic() {
@@ -145,15 +154,11 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let file_path = dir.path().join("test.txt");
 
-        let amount_of_lines = 100000;
-        let line_text = "hello test 123\n";
-        let file_content = line_text.repeat(amount_of_lines);
-
-        fs::write(&file_path, file_content).unwrap();
+        create_large_file(&file_path, 100000);
 
         let result = check_file(file_path.into_string().unwrap().as_str(), "test");
 
-        assert_eq!(result.len(), amount_of_lines)
+        assert_eq!(result.len(), 100000)
     }
 
     #[test]
@@ -168,5 +173,29 @@ mod tests {
             highlight_pattern_in_content("test hello there", "hello"),
             "test \x1b[43m hello \x1b[0m there"
         )
+    }
+
+    #[test]
+    fn performance() {
+        let start = Instant::now();
+        let dir_amount = 10;
+        let files_per_dir_amount = 100;
+
+        let base_dir = tempfile::tempdir().unwrap();
+
+        for i in 0..dir_amount {
+            fs::create_dir(base_dir.path().join(format!("dir_{i}"))).unwrap();
+
+            for j in 0..files_per_dir_amount {
+                let file_path = base_dir.path().join(format!("dir_{i}/file_{j}"));
+                create_large_file(&file_path, 5000)
+            }
+        }
+
+        check_dir(base_dir.path().to_str().unwrap(), "test");
+
+        let elapsed = start.elapsed();
+
+        println!("Elapsed: {:?}", elapsed)
     }
 }
