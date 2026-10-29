@@ -36,6 +36,7 @@ fn check_dir(dir_path: &str, pattern: &str) -> Vec<Match> {
         }
     };
 
+    // TODO: we can use threading here to improve performance
     for dir_entry in dir {
         let dir_entry_path = dir_entry.unwrap().path();
 
